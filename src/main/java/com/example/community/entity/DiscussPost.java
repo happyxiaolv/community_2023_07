@@ -2,6 +2,7 @@ package com.example.community.entity;
 
 import java.util.Date;
 
+//对应数据库 评论表
 public class DiscussPost {
 
     private int id;
