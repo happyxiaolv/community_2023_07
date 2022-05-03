@@ -1,11 +1,62 @@
-$(function(){
+	$(function(){
 	$("#publishBtn").click(publish);
 });
 
 function publish() {
 	$("#publishModal").modal("hide");
-	$("#hintModal").modal("show");
-	setTimeout(function(){
-		$("#hintModal").modal("hide");
-	}, 2000);
+	//发送Ajax请求之前，将CSRF令牌设置到请求的消息头中
+	// var token=$("meta[name='_csrf']").attr("content");
+	// var header=$("meta[name='_csrf_header']").attr("content");
+	// $(document).ajaxSend(function (e,xhr,options) {
+	// 	xhr.setRequestHeader(header,token);
+	// });
+		
+	//获取标题和内容
+	var title=$("#recipient-name").val();
+	var content=$("#message-text").val();
+	// var CONTEXT_PATH="/community";
+
+	//发送异步请求（post）
+	$.ajax({
+		type:'POST',
+		url:CONTEXT_PATH+"/discuss/add",
+		data:{"title":title,"content":content},
+		success:function (data){
+			data=$.parseJSON(data);
+			//在提示框中显示信息
+			$("hintBody").text(data.msg);
+			//显示提示框
+			$("#hintModal").modal("show");
+			//2s自动隐藏
+			setTimeout(function(){
+				$("#hintModal").modal("hide");
+				if(data.code==0){
+					window.location.reload();
+				}
+			}, 2000);
+		},
+		error:function (e){
+			console.log(e);
+		}
+	});
+
+	// $.post(
+	// 	CONTEXT_PATH+"/discuss/add",
+	// 	{"title":title,"content":content},
+	// 	function (data){
+	// 		data=$.parseJSON(data);
+	// 		//在提示框中显示信息
+	// 		$("hintBody").text(data.msg);
+	// 		//显示提示框
+	// 		$("#hintModal").modal("show");
+	// 		//2s自动隐藏
+	// 		setTimeout(function(){
+	// 			$("#hintModal").modal("hide");
+	// 			if(data.code==0){
+	// 				window.location.reload();
+	// 			}
+	// 		}, 2000);
+	// 	}
+	// );
+
 }

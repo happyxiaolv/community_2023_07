@@ -2,7 +2,8 @@ package com.example.community;
 
 import com.example.community.dao.AlphaDao;
 import com.example.community.service.AlphaService;
-import org.junit.jupiter.api.Test;
+//import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

@@ -1,11 +1,21 @@
 package com.example.community.controller;
 
+import com.alibaba.fastjson.JSONObject;
+import com.example.community.dao.DiscussPostMapper;
+import com.example.community.dao.UserMapper;
+import com.example.community.entity.DiscussPost;
+import com.example.community.entity.User;
 import com.example.community.service.AlphaService;
-import com.example.community.util.CommunityConstant;
 import com.example.community.util.CommunityUtil;
-import com.sun.deploy.net.HttpResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -186,6 +196,75 @@ public class AlphaController {
         System.out.println(session.getAttribute("id"));
         System.out.println(session.getAttribute("name"));
         return "get session";
+    }
+
+
+//  Ajax测试
+    @RequestMapping(path = "/ajax",method = RequestMethod.POST)
+    @ResponseBody
+    public String getJson(String name,int age){
+        System.out.println(name);
+        System.out.println(age);
+        return CommunityUtil.getJSONString("操作成功！",0);
+    }
+
+
+    @Autowired
+    private UserMapper userMapper;
+    @Autowired
+    private DiscussPostMapper discussPostMapper;
+
+    @Transactional(isolation = Isolation.READ_COMMITTED,propagation = Propagation.REQUIRED)
+    public Object save1(){
+        //新增用户
+        User user=new User();
+        user.setUsername("alpha");
+        user.setSalt(CommunityUtil.generateUUID().substring(0,5));
+        user.setPassword(CommunityUtil.md5("123"+user.getSalt()));
+        user.setEmail("alpha@test.qq");
+        user.setHeaderUrl("http://image.nowcoder.com/head/99t.png");
+        user.setCreateTime(new Date());
+        userMapper.insertUser(user);
+        //新增帖子
+        DiscussPost post = new DiscussPost();
+        post.setUserId(user.getId());
+        post.setTitle("hello");
+        post.setContent("新人报道");
+        post.setCreateTime(new Date());
+        discussPostMapper.insertDiscussPost(post);
+        Integer.parseInt("abc");
+        return "ok";
+    }
+
+    @Autowired
+    private TransactionTemplate transactionTemplate;
+    public Object save2(){
+        transactionTemplate.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
+        transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+
+        return transactionTemplate.execute(new TransactionCallback<Object>() {
+            @Override
+            public Object doInTransaction(TransactionStatus status) {
+                //新增用户
+                User user=new User();
+                user.setUsername("alpha");
+                user.setSalt(CommunityUtil.generateUUID().substring(0,5));
+                user.setPassword(CommunityUtil.md5("123"+user.getSalt()));
+                user.setEmail("alpha@test.qq");
+                user.setHeaderUrl("http://image.nowcoder.com/head/99t.png");
+                user.setCreateTime(new Date());
+                userMapper.insertUser(user);
+                //新增帖子
+                DiscussPost post = new DiscussPost();
+                post.setUserId(user.getId());
+                post.setTitle("hello");
+                post.setContent("新人报道");
+                post.setCreateTime(new Date());
+                discussPostMapper.insertDiscussPost(post);
+                Integer.parseInt("abc");
+                return "ok";
+            }
+        });
     }
 
 }
